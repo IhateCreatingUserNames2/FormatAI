@@ -4,12 +4,15 @@
 
 ## 🚀 Principais Funcionalidades
 
-  * [cite\_start]**Transformação de Dados com IA:** Utiliza o Claude para analisar e converter arquivos de dados de um formato para outro[cite: 11].
+  * [cite_start]**Transformação de Dados com IA:** Utiliza o Claude para analisar e converter arquivos de dados de um formato para outro[cite: 11].
   * [cite\_start]**Mapeamento Inteligente:** A IA é instruída a mapear colunas de forma inteligente, mesmo que os nomes não sejam idênticos (ex: "Valor Total" vs "VLR\_TOTAL")[cite: 15].
   * [cite\_start]**Consolidação de Arquivos:** Capaz de processar múltiplos arquivos de origem e consolidá-los em um único arquivo de saída[cite: 19].
   * [cite\_start]**Interface Web Simples:** Fornece uma interface HTML (via Jinja2) para upload de arquivos[cite: 3].
   * [cite\_start]**Reutilização de Arquivos:** Permite que o usuário selecione arquivos já enviados para o workspace do Claude, em vez de fazer o upload novamente[cite: 4, 23].
   * [cite\_start]**Download Direto:** O arquivo processado e formatado é disponibilizado para download imediato (StreamingResponse)[cite: 7].
+
+
+<img width="591" height="915" alt="image" src="https://github.com/user-attachments/assets/05f182f8-0a2f-4990-a411-7d58b4f418d3" />
 
 ## ⚙️ Como Funciona
 
