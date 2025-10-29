@@ -1,0 +1,221 @@
+<!-- Substitua o conteúdo de templates/index.html por este novo código -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormatAI - Seu Tradutor de Dados</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 40px auto; padding: 20px; background-color: #f4f6f9; }
+        .container { background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        h1 { color: #2c3e50; text-align: center; }
+        h2 { color: #34495e; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px; }
+        .upload-section, .existing-files-section { margin-bottom: 25px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background-color: #fafafa; }
+        label { font-weight: bold; margin-bottom: 10px; }
+        input[type="file"] { border: 1px solid #ccc; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; padding: 14px 22px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; width: 100%; transition: background-color 0.3s; font-weight: bold; }
+        button:hover:not(:disabled) { background-color: #2980b9; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .message { padding: 15px; margin-top: 20px; border-radius: 4px; display: none; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .file-list { max-height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; background: #fff; }
+        .file-item { display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #f0f0f0; }
+        .file-item:last-child { border-bottom: none; }
+        .file-item input { margin-right: 10px; }
+        .file-item label { font-weight: normal; flex-grow: 1; }
+        .file-info { font-size: 0.8em; color: #777; margin-left: auto; }
+        .header-actions { display: flex; justify-content: space-between; align-items: center; }
+        .refresh-btn { font-size: 12px; padding: 5px 10px; width: auto; background-color: #95a5a6; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><pre>Format.AI</pre></h1>
+
+        <form id="formatForm" enctype="multipart/form-data">
+
+            <!-- SEÇÃO DE ARQUIVOS EXISTENTES -->
+            <div class="existing-files-section">
+                <div class="header-actions">
+                    <h2>Meus Arquivos no Claude</h2>
+                    <button type="button" class="refresh-btn" id="refreshFiles">Atualizar Lista</button>
+                </div>
+                <p>Selecione arquivos que você já enviou anteriormente.</p>
+
+                <label for="existing_source_files">Arquivos de Origem (DE):</label>
+                <div id="existing_source_files" class="file-list">Carregando arquivos...</div>
+
+                <label for="existing_template_files" style="margin-top: 15px;">Arquivo de Template (PARA):</label>
+                <div id="existing_template_files" class="file-list">Carregando arquivos...</div>
+            </div>
+
+            <!-- SEÇÃO DE NOVOS UPLOADS -->
+            <div class="upload-section">
+                <h2>Ou faça um novo Upload</h2>
+
+                <label for="source_files">Novos Arquivos de Origem (DE):</label>
+                <input type="file" id="source_files" name="source_files" multiple>
+
+                <label for="template_file" style="margin-top: 15px;">Novo Arquivo de Template (PARA):</label>
+                <input type="file" id="template_file" name="template_file">
+            </div>
+
+            <button type="submit">Formatar e Baixar</button>
+        </form>
+
+        <div id="spinner" class="spinner"></div>
+        <div id="message" class="message"></div>
+
+        <!-- SEÇÃO DE DOWNLOADS -->
+        <div class="existing-files-section" style="margin-top: 40px;">
+             <h2>Resultados Gerados</h2>
+             <div id="downloadable_files" class="file-list">Carregando arquivos...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('formatForm');
+            const spinner = document.getElementById('spinner');
+            const messageBox = document.getElementById('message');
+            const submitButton = form.querySelector('button[type="submit"]');
+            const refreshButton = document.getElementById('refreshFiles');
+
+            const sourceListContainer = document.getElementById('existing_source_files');
+            const templateListContainer = document.getElementById('existing_template_files');
+            const downloadableListContainer = document.getElementById('downloadable_files');
+
+            async function fetchFiles() {
+                sourceListContainer.innerHTML = 'Carregando arquivos...';
+                templateListContainer.innerHTML = 'Carregando arquivos...';
+                downloadableListContainer.innerHTML = 'Carregando arquivos...';
+
+                try {
+                    const response = await fetch('/api/v1/transform/files');
+                    if (!response.ok) throw new Error('Falha ao buscar arquivos.');
+
+                    const files = await response.json();
+
+                    let sourceHtml = '';
+                    let templateHtml = '';
+                    let downloadableHtml = '';
+
+                    if (files.length === 0) {
+                        const noFilesMsg = '<p>Nenhum arquivo encontrado.</p>';
+                        sourceHtml = templateHtml = downloadableHtml = noFilesMsg;
+                    } else {
+                        files.forEach(file => {
+                            const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+                            const fileDate = new Date(file.created_at).toLocaleString('pt-BR');
+
+                            if (file.downloadable) {
+                                // Arquivos gerados para download
+                                downloadableHtml += `
+                                    <div class="file-item">
+                                        <label for="down_${file.id}">${file.filename}</label>
+                                        <span class="file-info">${fileSize} - ${fileDate}</span>
+                                        <a href="/v1/files/${file.id}/content" download="${file.filename}" style="margin-left: 10px;">Baixar</a>
+                                    </div>
+                                `;
+                            } else {
+                                // Arquivos de upload para seleção
+                                const itemHtml = `
+                                    <div class="file-item">
+                                        <INPUT_TYPE id="${file.id}" name="INPUT_NAME" value="${file.id}">
+                                        <label for="${file.id}">${file.filename}</label>
+                                        <span class="file-info">${fileSize} - ${fileDate}</span>
+                                    </div>
+                                `;
+                                sourceHtml += itemHtml.replace('INPUT_TYPE', 'input type="checkbox"').replace('INPUT_NAME', 'existing_source_ids');
+                                templateHtml += itemHtml.replace('INPUT_TYPE', 'input type="radio"').replace('INPUT_NAME', 'existing_template_id');
+                            }
+                        });
+                    }
+
+                    sourceListContainer.innerHTML = sourceHtml || '<p>Nenhum arquivo de origem encontrado.</p>';
+                    templateListContainer.innerHTML = templateHtml || '<p>Nenhum template encontrado.</p>';
+                    downloadableListContainer.innerHTML = downloadableHtml || '<p>Nenhum resultado gerado encontrado.</p>';
+
+                } catch (error) {
+                    console.error('Erro ao buscar arquivos:', error);
+                    const errorMsg = '<p style="color: red;">Erro ao carregar a lista de arquivos.</p>';
+                    sourceListContainer.innerHTML = errorMsg;
+                    templateListContainer.innerHTML = errorMsg;
+                    downloadableListContainer.innerHTML = errorMsg;
+                }
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                spinner.style.display = 'block';
+                messageBox.style.display = 'none';
+                messageBox.className = 'message';
+                submitButton.disabled = true;
+                submitButton.textContent = 'Processando...';
+
+                // Usamos o FormData para coletar tanto os arquivos novos quanto os IDs selecionados
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('/api/v1/transform/formatar', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const contentDisposition = response.headers.get('content-disposition');
+                        let filename = "resultado_formatado.xlsx";
+                        if (contentDisposition) {
+                            const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                            if (filenameMatch && filenameMatch.length > 1) {
+                                filename = filenameMatch[1];
+                            }
+                        }
+
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+
+                        messageBox.textContent = `Sucesso! O download de "${filename}" iniciou. A lista de arquivos será atualizada.`;
+                        messageBox.classList.add('success');
+                        messageBox.style.display = 'block';
+
+                        // Atualiza a lista de arquivos após o sucesso
+                        setTimeout(fetchFiles, 1000);
+
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || `Erro ${response.status}: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    messageBox.textContent = 'Erro ao processar os arquivos: ' + error.message;
+                    messageBox.classList.add('error');
+                    messageBox.style.display = 'block';
+                } finally {
+                    spinner.style.display = 'none';
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Formatar e Baixar';
+                }
+            });
+
+            refreshButton.addEventListener('click', fetchFiles);
+
+            // Carrega os arquivos ao iniciar a página
+            fetchFiles();
+        });
+    </script>
+</body>
+</html>
