@@ -1,15 +1,15 @@
 # FormatAI 🤖✨
 
-[cite\_start]`FormatAI` é uma aplicação web de back-end construída com FastAPI que atua como um "tradutor universal de dados"[cite: 1]. O projeto utiliza a API do Claude da Anthropic, especificamente as ferramentas de Execução de Código e a API de Arquivos, para transformar, mapear e consolidar dados de arquivos de origem (como planilhas) em um novo formato definido por um arquivo de template.
+ `FormatAI` é uma aplicação web de back-end construída com FastAPI que atua como um "tradutor universal de dados"[cite: 1]. O projeto utiliza a API do Claude da Anthropic, especificamente as ferramentas de Execução de Código e a API de Arquivos, para transformar, mapear e consolidar dados de arquivos de origem (como planilhas) em um novo formato definido por um arquivo de template.
 
 ## 🚀 Principais Funcionalidades
 
-  * [cite_start]**Transformação de Dados com IA:** Utiliza o Claude para analisar e converter arquivos de dados de um formato para outro[cite: 11].
-  * [cite\_start]**Mapeamento Inteligente:** A IA é instruída a mapear colunas de forma inteligente, mesmo que os nomes não sejam idênticos (ex: "Valor Total" vs "VLR\_TOTAL")[cite: 15].
-  * [cite\_start]**Consolidação de Arquivos:** Capaz de processar múltiplos arquivos de origem e consolidá-los em um único arquivo de saída[cite: 19].
-  * [cite\_start]**Interface Web Simples:** Fornece uma interface HTML (via Jinja2) para upload de arquivos[cite: 3].
-  * [cite\_start]**Reutilização de Arquivos:** Permite que o usuário selecione arquivos já enviados para o workspace do Claude, em vez de fazer o upload novamente[cite: 4, 23].
-  * [cite\_start]**Download Direto:** O arquivo processado e formatado é disponibilizado para download imediato (StreamingResponse)[cite: 7].
+  * **Transformação de Dados com IA:** Utiliza o Claude para analisar e converter arquivos de dados de um formato para outro[cite: 11].
+  *  **Mapeamento Inteligente:** A IA é instruída a mapear colunas de forma inteligente, mesmo que os nomes não sejam idênticos (ex: "Valor Total" vs "VLR\_TOTAL")[cite: 15].
+  *  **Consolidação de Arquivos:** Capaz de processar múltiplos arquivos de origem e consolidá-los em um único arquivo de saída[cite: 19].
+  *  **Interface Web Simples:** Fornece uma interface HTML (via Jinja2) para upload de arquivos[cite: 3].
+  *  **Reutilização de Arquivos:** Permite que o usuário selecione arquivos já enviados para o workspace do Claude, em vez de fazer o upload novamente[cite: 4, 23].
+  *  **Download Direto:** O arquivo processado e formatado é disponibilizado para download imediato (StreamingResponse)[cite: 7].
 
 
 <img width="591" height="915" alt="image" src="https://github.com/user-attachments/assets/05f182f8-0a2f-4990-a411-7d58b4f418d3" />
@@ -18,17 +18,17 @@
 
 A aplicação segue um fluxo de orquestração para realizar a formatação dos dados:
 
-1.  [cite\_start]**Interface:** O usuário acessa a rota principal (`/api/v1/transform/`) [cite: 2][cite\_start], que serve uma página HTML (`index.html`)[cite: 3].
-2.  [cite\_start]**Envio:** O usuário pode fazer o upload de novos arquivos de origem e um arquivo de template, ou selecionar os IDs de arquivos já existentes no Claude[cite: 4].
-3.  [cite\_start]**Upload no Claude:** Os novos arquivos são enviados para a API de Arquivos (Files API) do Claude e recebem um `file_id`[cite: 10, 25].
-4.  [cite\_start]**Construção do Prompt:** Um prompt detalhado é montado, instruindo a IA a usar a ferramenta de execução de código (`code_execution`)[cite: 12, 28]. Este prompt inclui os IDs de todos os arquivos de origem e do arquivo de template.
-5.  [cite\_start]**Execução do Código:** O Claude é instruído a escrever e executar um script Python (usando `pandas`, `openpyxl`, `xlrd`) [cite: 16, 17] para:
-      * [cite\_start]Analisar todos os arquivos[cite: 13].
-      * [cite\_start]Mapear os dados das origens para o template[cite: 14].
-      * [cite\_start]Consolidar os resultados[cite: 19].
-      * [cite\_start]Salvar a saída como `resultado_formatado.xlsx`[cite: 19].
-6.  [cite\_start]**Retorno:** A aplicação identifica o `file_id` do arquivo `resultado_formatado.xlsx` gerado na resposta do Claude[cite: 30].
-7.  [cite\_start]**Download:** O serviço faz o download do conteúdo desse arquivo [cite: 32] [cite\_start]e o retorna ao usuário como um `StreamingResponse`, iniciando o download no navegador[cite: 7].
+1.   **Interface:** O usuário acessa a rota principal (`/api/v1/transform/`) [cite: 2] , que serve uma página HTML (`index.html`)[cite: 3].
+2.   **Envio:** O usuário pode fazer o upload de novos arquivos de origem e um arquivo de template, ou selecionar os IDs de arquivos já existentes no Claude[cite: 4].
+3.   **Upload no Claude:** Os novos arquivos são enviados para a API de Arquivos (Files API) do Claude e recebem um `file_id`[cite: 10, 25].
+4.   **Construção do Prompt:** Um prompt detalhado é montado, instruindo a IA a usar a ferramenta de execução de código (`code_execution`)[cite: 12, 28]. Este prompt inclui os IDs de todos os arquivos de origem e do arquivo de template.
+5.   **Execução do Código:** O Claude é instruído a escrever e executar um script Python (usando `pandas`, `openpyxl`, `xlrd`) [cite: 16, 17] para:
+      *  Analisar todos os arquivos[cite: 13].
+      *  Mapear os dados das origens para o template[cite: 14].
+      *  Consolidar os resultados[cite: 19].
+      *  Salvar a saída como `resultado_formatado.xlsx`[cite: 19].
+6.   **Retorno:** A aplicação identifica o `file_id` do arquivo `resultado_formatado.xlsx` gerado na resposta do Claude[cite: 30].
+7.   **Download:** O serviço faz o download do conteúdo desse arquivo [cite: 32]  e o retorna ao usuário como um `StreamingResponse`, iniciando o download no navegador[cite: 7].
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -36,13 +36,13 @@ A aplicação segue um fluxo de orquestração para realizar a formatação dos 
   * **Servidor ASGI:** Uvicorn (implícito pelo FastAPI)
   * **IA (Core):** Anthropic Claude API
   * **Recursos Beta do Claude:**
-      * [cite\_start]`code-execution-2025-08-25` [cite: 10, 28]
-      * [cite\_start]`files-api-2025-04-14` [cite: 10]
+      *  `code-execution-2025-08-25` [cite: 10, 28]
+      *  `files-api-2025-04-14` [cite: 10]
   * **Bibliotecas Python:**
-      * [cite\_start]`anthropic` [cite: 9]
-      * [cite\_start]`fastapi` [cite: 1]
-      * [cite\_start]`python-dotenv` [cite: 9]
-      * [cite\_start]`jinja2` [cite: 3]
+      *  `anthropic` [cite: 9]
+      *  `fastapi` [cite: 1]
+      *  `python-dotenv` [cite: 9]
+      *  `jinja2` [cite: 3]
   * **Front-end:** HTML5 (via Jinja2 Templates)
 
 ## 📦 Estrutura do Projeto
@@ -79,8 +79,8 @@ FormatAI/
 ### 1\. Pré-requisitos
 
   * Python 3.8+
-  * [cite\_start]Uma chave de API da Anthropic (Claude) [cite: 9]
-  * [cite\_start]Acesso às features beta: `code-execution-2025-08-25` e `files-api-2025-04-14`[cite: 10].
+  *  Uma chave de API da Anthropic (Claude) [cite: 9]
+  *  Acesso às features beta: `code-execution-2025-08-25` e `files-api-2025-04-14`[cite: 10].
 
 ### 2\. Instalação
 
@@ -121,13 +121,13 @@ FormatAI/
     ```
 
 2.  **Acesse a aplicação:**
-    Abra seu navegador e acesse `http://127.0.0.1:8000/`. [cite\_start]Você será redirecionado automaticamente para a página de upload em `http://127.0.0.1:8000/api/v1/transform/`[cite: 2].
+    Abra seu navegador e acesse `http://127.0.0.1:8000/`.  Você será redirecionado automaticamente para a página de upload em `http://127.0.0.1:8000/api/v1/transform/`[cite: 2].
 
 ## 🔌 Endpoints da API
 
-  * [cite\_start]`GET /api/v1/transform/` [cite: 3]
+  *  `GET /api/v1/transform/` [cite: 3]
       * **Descrição:** Serve a página HTML principal (`index.html`) para o upload de arquivos.
-  * [cite\_start]`GET /api/v1/transform/files` [cite: 23]
+  *  `GET /api/v1/transform/files` [cite: 23]
       * **Descrição:** Retorna uma lista de arquivos `.json` que já existem no workspace do Claude.
-  * [cite\_start]`POST /api/v1/transform/formatar` [cite: 5]
-      * [cite\_start]**Descrição:** Recebe os arquivos (novos ou IDs existentes) [cite: 4][cite\_start], orquestra o processo de formatação com o Claude [cite: 6] [cite\_start]e retorna o arquivo `resultado_formatado.xlsx` para download[cite: 7, 8].
+  *  `POST /api/v1/transform/formatar` [cite: 5]
+      *  **Descrição:** Recebe os arquivos (novos ou IDs existentes) [cite: 4] , orquestra o processo de formatação com o Claude [cite: 6]  e retorna o arquivo `resultado_formatado.xlsx` para download[cite: 7, 8].
